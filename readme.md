@@ -1,9 +1,8 @@
 #hướng dẫn dùng
+cd /mnt/b/Abshoem/PUPDB
 
 chạy trên terminal
-PUPDB_FILE_PATH=db1.json gunicorn -w 4 -b 127.0.0.1:4000 pupdb.rest:APP &
-PUPDB_FILE_PATH=db2.json gunicorn -w 4 -b 127.0.0.1:4001 pupdb.rest:APP &
-wait
+./start_servers.sh
 
 cài thư viện node-fetch
 
