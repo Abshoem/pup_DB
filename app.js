@@ -1,7 +1,7 @@
-const express = require("express");
+import express from "express";
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
-const { batchSetToPrimary, getPrimary } = require("./replicate.js");
+import { batchSetToPrimary, getPrimary } from "./controllers/replicate.js";
 
 const app = express();
 app.use(express.json());
@@ -14,13 +14,19 @@ app.get("/", async (req, res) => {
     const resDumps = await fetch(`${primaryNode}/dumps`);
     if (!resDumps.ok) throw new Error("Failed to load database");
     const data = await resDumps.json();
-    res.render("index", { primaryNode, database: data.database });
+    res.render("index", {
+      primaryNode,
+      database: data.database,
+      error: null,
+      getResult: null,
+    });
   } catch (error) {
     console.error("Error loading database:", error);
     res.render("index", {
       primaryNode: getPrimary,
       database: {},
       error: error.message,
+      getResult: null,
     });
   }
 });
@@ -41,20 +47,20 @@ app.post("/set", async (req, res) => {
       primaryNode: getPrimary,
       database: {},
       error: `Set error: ${error.message}`,
+      getResult: null,
     });
   }
 });
 
 app.post("/batch-set", async (req, res) => {
-  const data = req.body; // Mảng [{key, value}, ...]
-  if (!Array.isArray(data) || data.length === 0) {
-    return res.render("index", {
-      primaryNode: getPrimary,
-      database: {},
-      error: "Body phải là mảng không rỗng",
-    });
-  }
+  let data = req.body.data;
   try {
+    if (typeof data === "string") {
+      data = JSON.parse(data);
+    }
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("Body phải là mảng không rỗng");
+    }
     const results = await batchSetToPrimary(data);
     const error = results.find((r) => !r.success)?.error;
     if (error) throw new Error(error);
@@ -65,6 +71,7 @@ app.post("/batch-set", async (req, res) => {
       primaryNode: getPrimary,
       database: {},
       error: `Batch set error: ${error.message}`,
+      getResult: null,
     });
   }
 });
@@ -82,6 +89,7 @@ app.get("/get", async (req, res) => {
     res.render("index", {
       primaryNode: getPrimary,
       database,
+      error: null,
       getResult: `Value: ${data.value || "Not found"}`,
     });
   } catch (error) {
@@ -90,6 +98,7 @@ app.get("/get", async (req, res) => {
       primaryNode: getPrimary,
       database: {},
       error: `Get error: ${error.message}`,
+      getResult: null,
     });
   }
 });
@@ -111,6 +120,7 @@ app.post("/remove", async (req, res) => {
       primaryNode: getPrimary,
       database: {},
       error: `Remove error: ${error.message}`,
+      getResult: null,
     });
   }
 });

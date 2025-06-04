@@ -2,7 +2,7 @@ import fs from "fs";
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
-// Đọc file nodes.json chứa danh sách node dạng ["http://127.0.0.1:4000", ...]
+// Đọc file nodes.json
 let nodes = [];
 try {
   const data = fs.readFileSync("./nodes.json", "utf-8");
@@ -15,11 +15,33 @@ try {
   process.exit(1);
 }
 
-const primaryUrl = nodes[0];
-const secondaryUrls = nodes.slice(1);
+let primaryUrl = nodes[0];
+let secondaryUrls = nodes.slice(1);
 
-console.log("Node chính (primary):", primaryUrl);
-console.log("Node phụ (secondary):", secondaryUrls);
+// Kiểm tra node có sống không
+async function isNodeAlive(nodeUrl) {
+  try {
+    const res = await fetch(`${nodeUrl}/dumps`, { timeout: 2000 });
+    return res.ok;
+  } catch (error) {
+    console.error(`Node ${nodeUrl} is down:`, error);
+    return false;
+  }
+}
+
+// Bầu chọn node chính mới
+async function electNewPrimary() {
+  for (const nodeUrl of secondaryUrls) {
+    if (await isNodeAlive(nodeUrl)) {
+      console.log(`Elected new primary: ${nodeUrl}`);
+      primaryUrl = nodeUrl;
+      secondaryUrls = nodes.filter((url) => url !== primaryUrl);
+      return true;
+    }
+  }
+  console.error("No live nodes available for election");
+  return false;
+}
 
 // Lấy dữ liệu từ node chính
 async function fetchPrimaryData() {
@@ -48,7 +70,7 @@ async function fetchSecondaryData(nodeUrl) {
   }
 }
 
-// Gửi batch key-value để set/update trên node phụ
+// Gửi batch key-value
 async function batchPushToSecondary(nodeUrl, batch) {
   try {
     const requests = batch.map(({ key, value }) =>
@@ -91,7 +113,7 @@ async function batchPushToSecondary(nodeUrl, batch) {
   }
 }
 
-// Gửi batch yêu cầu xóa key trên node phụ
+// Gửi batch xóa key
 async function batchDeleteFromSecondary(nodeUrl, keys) {
   try {
     const requests = keys.map((key) =>
@@ -128,19 +150,16 @@ async function batchDeleteFromSecondary(nodeUrl, keys) {
   }
 }
 
-// Hàm mới: Xử lý mảng key-value như một "request" duy nhất
+// Xử lý batch set
 async function batchSetToPrimary(data) {
   try {
-    const BATCH_SIZE = 10; // Kích thước batch
+    const BATCH_SIZE = 10;
     const results = [];
-
-    // Chia mảng data thành các batch nhỏ
     for (let i = 0; i < data.length; i += BATCH_SIZE) {
       const batch = data.slice(i, i + BATCH_SIZE);
       const batchResults = await batchPushToSecondary(primaryUrl, batch);
       results.push(...batchResults);
     }
-
     return results;
   } catch (error) {
     console.error("Error in batchSetToPrimary:", error);
@@ -154,14 +173,19 @@ async function batchSetToPrimary(data) {
 
 async function replicate() {
   console.log("--- Start replicate at", new Date().toLocaleTimeString());
+
+  if (!(await isNodeAlive(primaryUrl))) {
+    console.log(`Primary node ${primaryUrl} is down. Electing new primary...`);
+    await electNewPrimary();
+  }
+
   const primaryData = await fetchPrimaryData();
   if (!primaryData) {
     console.log("No data fetched from primary. Skipping replicate.");
     return;
   }
 
-  const BATCH_SIZE = 10; // Kích thước batch, có thể điều chỉnh
-
+  const BATCH_SIZE = 10;
   for (const nodeUrl of secondaryUrls) {
     const secondaryData = await fetchSecondaryData(nodeUrl);
     if (!secondaryData) {
@@ -169,7 +193,6 @@ async function replicate() {
       continue;
     }
 
-    // Gom các key-value cần cập nhật/thêm mới thành batch
     const updates = [];
     for (const [key, value] of Object.entries(primaryData)) {
       if (!(key in secondaryData) || secondaryData[key] !== value) {
@@ -177,18 +200,15 @@ async function replicate() {
       }
     }
 
-    // Gửi batch cập nhật
     for (let i = 0; i < updates.length; i += BATCH_SIZE) {
       const batch = updates.slice(i, i + BATCH_SIZE);
       await batchPushToSecondary(nodeUrl, batch);
     }
 
-    // Gom các key cần xóa thành batch
     const keysToDelete = Object.keys(secondaryData).filter(
       (key) => !(key in primaryData)
     );
 
-    // Gửi batch xóa
     for (let i = 0; i < keysToDelete.length; i += BATCH_SIZE) {
       const batch = keysToDelete.slice(i, i + BATCH_SIZE);
       await batchDeleteFromSecondary(nodeUrl, batch);
@@ -197,8 +217,8 @@ async function replicate() {
   console.log("--- Replication done at", new Date().toLocaleTimeString());
 }
 
-// Export hàm batchSetToPrimary để test
-export { batchSetToPrimary };
+// Export hàm và biến
+export { batchSetToPrimary, primaryUrl as getPrimary };
 
 setInterval(replicate, 5000);
 replicate();

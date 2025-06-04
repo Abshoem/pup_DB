@@ -13,7 +13,7 @@
         Current Primary Node:
         <span class="font-semibold"><%= primaryNode %></span>
       </p>
-      <% if (error) { %>
+      <% if (error && error.length > 0) { %>
       <p class="text-red-500 mb-4"><%= error %></p>
       <% } %>
 
@@ -68,7 +68,7 @@
             Get
           </button>
         </form>
-        <% if (getResult) { %>
+        <% if (getResult && getResult.length > 0) { %>
         <p class="mt-2"><%= getResult %></p>
         <% } %>
       </div>
