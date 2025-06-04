@@ -153,6 +153,48 @@ ToDoApp được thiết kế để giúp người dùng tổ chức công việ
   curl -XPOST http://localhost:4000/truncate-db
   ```
 
+### **/add** (Method: POST)
+- **Mô tả**: API này cho phép thêm công việc mới vào danh sách công việc.
+- **Ví dụ**:
+  ```bash
+  curl -XPOST http://localhost:3000/add -H 'Content-Type: application/json' -d '{"title": "New task"}'
+  ```
+
+### **/batch-add** (Method: POST)
+- **Mô tả**: API này cho phép thêm nhiều công việc vào danh sách cùng một lúc.
+```bash
+  curl -XPOST http://localhost:3000/batch-add -H 'Content-Type: application/json' -d '{"titles": "Task 1 Task 2Task 3"}'
+  ```
+
+
+### **/complete/:id** (Method: POST)
+- **Mô tả**: API này đánh dấu một công việc là đã hoàn thành.
+- **Ví dụ**:
+  ```bash
+  curl -XPOST http://localhost:3000/complete/your-todo-id
+  ```
+
+### **/edit/:id** (Method: POST)
+- **Mô tả**: API này cho phép chỉnh sửa tiêu đề của công việc đã có.
+- **Ví dụ**:
+  ```bash
+  curl -XPOST http://localhost:3000/edit/your-todo-id -H 'Content-Type: application/json' -d '{"title": "Updated task"}'
+  ```
+
+### **/delete/:id** (Method: POST)
+- **Mô tả**: API này xóa một công việc khỏi danh sách.
+- **Ví dụ**:
+  ```bash
+  curl -XPOST http://localhost:3000/delete/your-todo-id
+  ```
+
+### **/truncate-db** (Method: POST)
+- **Mô tả**: API này xóa toàn bộ dữ liệu trong cơ sở dữ liệu (truncate).
+- **Ví dụ**:
+  ```bash
+  curl -XPOST http://localhost:3000/truncate-db
+  ```
+
 ## Lời kết 💬
 
 Cảm ơn bạn đã tham gia và sử dụng **ToDoApp**! Ứng dụng này được phát triển với mục tiêu đơn giản hóa việc quản lý công việc hàng ngày và giúp người dùng theo dõi nhiệm vụ một cách dễ dàng và hiệu quả. Chúng tôi hy vọng rằng bạn sẽ có trải nghiệm tuyệt vời với ứng dụng.
