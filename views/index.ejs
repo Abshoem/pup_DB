@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PupDB Web Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-6">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+      <h1 class="text-2xl font-bold mb-4">PupDB Web Interface</h1>
+      <p class="mb-4">
+        Current Primary Node:
+        <span class="font-semibold"><%= primaryNode %></span>
+      </p>
+      <% if (error) { %>
+      <p class="text-red-500 mb-4"><%= error %></p>
+      <% } %>
+
+      <!-- Form để thêm key-value -->
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold">Add Key-Value</h2>
+        <form action="/set" method="POST" class="flex">
+          <input
+            name="key"
+            type="text"
+            placeholder="Key"
+            class="border p-2 mr-2 flex-1"
+          />
+          <input
+            name="value"
+            type="text"
+            placeholder="Value"
+            class="border p-2 mr-2 flex-1"
+          />
+          <button type="submit" class="bg-blue-500 text-white p-2 rounded">
+            Add
+          </button>
+        </form>
+      </div>
+
+      <!-- Form để thêm batch key-value -->
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold">Add Batch Key-Value</h2>
+        <form action="/batch-set" method="POST" class="flex">
+          <textarea
+            name="data"
+            placeholder='[{ "key": "user1", "value": "John" }, { "key": "user2", "value": "Jane" }]'
+            class="border p-2 mr-2 flex-1 h-24"
+          ></textarea>
+          <button type="submit" class="bg-blue-600 text-white p-2 rounded">
+            Add Batch
+          </button>
+        </form>
+      </div>
+
+      <!-- Form để lấy value -->
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold">Get Value</h2>
+        <form action="/get" method="GET" class="flex">
+          <input
+            name="key"
+            type="text"
+            placeholder="Key"
+            class="border p-2 mr-2 flex-1"
+          />
+          <button type="submit" class="bg-green-500 text-white p-2 rounded">
+            Get
+          </button>
+        </form>
+        <% if (getResult) { %>
+        <p class="mt-2"><%= getResult %></p>
+        <% } %>
+      </div>
+
+      <!-- Form để xóa key -->
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold">Remove Key</h2>
+        <form action="/remove" method="POST" class="flex">
+          <input
+            name="key"
+            type="text"
+            placeholder="Key"
+            class="border p-2 mr-2 flex-1"
+          />
+          <button type="submit" class="bg-red-500 text-white p-2 rounded">
+            Remove
+          </button>
+        </form>
+      </div>
+
+      <!-- Hiển thị database -->
+      <div>
+        <h2 class="text-lg font-semibold">Database Contents</h2>
+        <pre class="bg-gray-200 p-4 rounded">
+<%= JSON.stringify(database, null, 2) %></pre
+        >
+      </div>
+    </div>
+  </body>
+</html>
