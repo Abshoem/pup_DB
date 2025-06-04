@@ -74,6 +74,15 @@ ToDoApp được thiết kế để giúp người dùng tổ chức công việ
        "value": "myvalue"
    }
    ```
+   hoặc bạn có thể gửi một lúc nhiều key, value vì chúng tôi đã bổ sung tính năng Batch Processing.
+   ```json
+
+   [
+     { "key": "user1", "value": "John" },
+     { "key": "user2", "value": "Jane" },
+   ]
+   ```
+         tương tự với /remove.
 
 8. **Kiểm tra sao chép dữ liệu**:  
    Sau khoảng 5 giây, dữ liệu sẽ được sao chép sang các node phụ (port 4001, 4002, ...). Để kiểm tra, gửi yêu cầu GET đến địa chỉ:
@@ -81,6 +90,7 @@ ToDoApp được thiết kế để giúp người dùng tổ chức công việ
    GET http://127.0.0.1:4001/get?key=mykey
    ```
    Hoặc với các port khác (4002, 4003, ...). Mỗi node phụ sẽ sao chép dữ liệu sau mỗi 5 giây, đảm bảo rằng mọi thay đổi đều được đồng bộ.
+9. **Truy cập: Mở trình duyệt và nhập http://localhost:3000 để sử dụng.**
 
 ## Lời kết 💬
 
