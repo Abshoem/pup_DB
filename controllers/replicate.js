@@ -15,6 +15,11 @@ try {
   process.exit(1);
 }
 
+// Quản lý vai trò node
+let nodeRoles = {
+  [nodes[0]]: "primary",
+  ...Object.fromEntries(nodes.slice(1).map((url) => [url, "secondary"])),
+};
 let primaryUrl = nodes[0];
 let secondaryUrls = nodes.slice(1);
 
@@ -34,6 +39,8 @@ async function electNewPrimary() {
   for (const nodeUrl of secondaryUrls) {
     if (await isNodeAlive(nodeUrl)) {
       console.log(`Elected new primary: ${nodeUrl}`);
+      nodeRoles[primaryUrl] = "secondary";
+      nodeRoles[nodeUrl] = "primary";
       primaryUrl = nodeUrl;
       secondaryUrls = nodes.filter((url) => url !== primaryUrl);
       return true;
@@ -218,7 +225,4 @@ async function replicate() {
 }
 
 // Export hàm và biến
-export { batchSetToPrimary, primaryUrl as getPrimary };
-
-setInterval(replicate, 5000);
-replicate();
+export { batchSetToPrimary, primaryUrl as getPrimary, nodeRoles, replicate };
