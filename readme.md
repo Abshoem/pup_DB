@@ -66,6 +66,9 @@ ToDoApp được thiết kế để giúp người dùng tổ chức công việ
    ```bash
    POST http://127.0.0.1:4000/set
    ```
+   
+
+   
 
 7. **Và trong phần Body của yêu cầu, nhập dữ liệu dạng JSON**:
    ```json
@@ -91,6 +94,64 @@ ToDoApp được thiết kế để giúp người dùng tổ chức công việ
    ```
    Hoặc với các port khác (4002, 4003, ...). Mỗi node phụ sẽ sao chép dữ liệu sau mỗi 5 giây, đảm bảo rằng mọi thay đổi đều được đồng bộ.
 9. **Truy cập: Mở trình duyệt và nhập http://localhost:3000 để sử dụng.**
+
+## Các API Endpoint 📡
+
+### **/get?key=<key-goes-here>** (Method: GET)
+- **Mô tả**: API này sử dụng phương thức `get()` của PupDB để lấy giá trị của một key.
+- **Ví dụ**:
+  ```bash
+  curl -XGET http://localhost:4000/get?key=test
+  ```
+
+### **/set** (Method: POST)
+- **Mô tả**: API này sử dụng phương thức `set()` của PupDB để thiết lập giá trị cho một key.
+- **Ví dụ**:
+  ```bash
+  curl -XPOST http://localhost:4000/set -H 'Content-Type: application/json' -d '{"key": "test", "value": "1234"}'
+  ```
+
+### **/remove/<key-goes-here>** (Method: DELETE)
+- **Mô tả**: API này sử dụng phương thức `remove()` của PupDB để xóa một key khỏi cơ sở dữ liệu.
+- **Ví dụ**:
+  ```bash
+  curl -XDELETE http://localhost:4000/remove/test
+  ```
+
+### **/keys** (Method: GET)
+- **Mô tả**: API này sử dụng phương thức `keys()` của PupDB để lấy danh sách các key trong cơ sở dữ liệu.
+- **Ví dụ**:
+  ```bash
+  curl -XGET http://localhost:4000/keys
+  ```
+
+### **/values** (Method: GET)
+- **Mô tả**: API này sử dụng phương thức `values()` của PupDB để lấy danh sách các giá trị (values) của các key trong cơ sở dữ liệu.
+- **Ví dụ**:
+  ```bash
+  curl -XGET http://localhost:4000/values
+  ```
+
+### **/items** (Method: GET)
+- **Mô tả**: API này sử dụng phương thức `items()` của PupDB để lấy danh sách các cặp [key, value] trong cơ sở dữ liệu.
+- **Ví dụ**:
+  ```bash
+  curl -XGET http://localhost:4000/items
+  ```
+
+### **/dumps** (Method: GET)
+- **Mô tả**: API này sử dụng phương thức `dumps()` của PupDB để lấy chuỗi dump toàn bộ cơ sở dữ liệu.
+- **Ví dụ**:
+  ```bash
+  curl -XGET http://localhost:4000/dumps
+  ```
+
+### **/truncate-db** (Method: POST)
+- **Mô tả**: API này sử dụng phương thức `truncate_db()` của PupDB để xóa toàn bộ dữ liệu trong cơ sở dữ liệu.
+- **Ví dụ**:
+  ```bash
+  curl -XPOST http://localhost:4000/truncate-db
+  ```
 
 ## Lời kết 💬
 
