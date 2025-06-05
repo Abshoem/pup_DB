@@ -1,4 +1,4 @@
-# ToDoApp 📝More actions
+# ToDoApp 
 
 ToDoApp là một ứng dụng quản lý công việc đơn giản giúp người dùng dễ dàng thêm, sửa và xóa các nhiệm vụ trong ngày. Ứng dụng sử dụng **Node.js**, **Express.js**, **PupDB** và **EJS** để tạo ra một công cụ mạnh mẽ nhưng dễ sử dụng cho việc tổ chức và theo dõi công việc cá nhân.
 
