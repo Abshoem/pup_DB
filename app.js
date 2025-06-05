@@ -59,6 +59,8 @@ app.get("/", async (req, res) => {
   }
 });
 
+// thêm
+
 app.post("/add", checkWritePermission, async (req, res) => {
   const { title } = req.body;
   if (!title) {
@@ -88,6 +90,7 @@ app.post("/add", checkWritePermission, async (req, res) => {
   }
 });
 
+// thêm batch add
 app.post("/batch-add", checkWritePermission, async (req, res) => {
   let titles = req.body.titles;
   try {
@@ -145,6 +148,42 @@ app.post("/complete/:id", checkWritePermission, async (req, res) => {
   }
 });
 
+// sửa
+app.post("/edit/:id", checkWritePermission, async (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
+  if (!title) {
+    return res.render("index", {
+      primaryNode: getPrimary,
+      todos: [],
+      error: "Title is required",
+    });
+  }
+  try {
+    const resGet = await fetch(
+      `${getPrimary}/get?key=${encodeURIComponent(id)}`
+    );
+    if (!resGet.ok) throw new Error("Todo not found");
+    const data = await resGet.json();
+    const todo = JSON.parse(data.value);
+    todo.title = title; // Cập nhật tiêu đề mới
+    const resSet = await fetch(`${getPrimary}/set`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: id, value: JSON.stringify(todo) }),
+    });
+    if (!resSet.ok) throw new Error("Failed to edit todo");
+    res.redirect("/");
+  } catch (error) {
+    console.error("Error editing todo:", error);
+    res.render("index", {
+      primaryNode: getPrimary,
+      todos: [],
+      error: `Edit error: ${error.message}`,
+    });
+  }
+});
+
 app.post("/delete/:id", checkWritePermission, async (req, res) => {
   const { id } = req.params;
   try {
@@ -162,6 +201,29 @@ app.post("/delete/:id", checkWritePermission, async (req, res) => {
       primaryNode: getPrimary,
       todos: [],
       error: `Delete error: ${error.message}`,
+    });
+  }
+});
+
+app.post("/truncate-db", checkWritePermission, async (req, res) => {
+  try {
+    const primaryNode = getPrimary;
+    // Gửi yêu cầu truncate-db đến node chính
+    const resTruncate = await fetch(`${primaryNode}/truncate-db`, {
+      method: "POST",
+    });
+    if (!resTruncate.ok) throw new Error("Failed to truncate database");
+
+    // Kích hoạt replicate để đồng bộ các node phụ
+    await replicate();
+
+    res.redirect("/");
+  } catch (error) {
+    console.error("Error truncating database:", error);
+    res.render("index", {
+      primaryNode: getPrimary,
+      todos: [],
+      error: `Truncate error: ${error.message}`,
     });
   }
 });
